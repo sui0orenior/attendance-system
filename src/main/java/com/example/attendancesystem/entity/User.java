@@ -9,6 +9,7 @@ public class User {
     private String realName;
     private String email;
     private String phone;
+    private String role;
     private LocalDateTime createTime;
 
     public User() {}
@@ -23,6 +24,14 @@ public class User {
         this.phone = phone;
         this.createTime = createTime;
     }
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }

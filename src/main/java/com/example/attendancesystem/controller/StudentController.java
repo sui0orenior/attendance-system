@@ -5,6 +5,7 @@ import com.example.attendancesystem.common.Result;
 import com.example.attendancesystem.entity.Student;
 import com.example.attendancesystem.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class StudentController {
 
     @Autowired
     private StudentService studentService;
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PostMapping("/add")
     public Result<Student> addStudent(@RequestBody Student student) {
         try {
@@ -26,7 +27,7 @@ public class StudentController {
             return Result.fail(e.getMessage());
         }
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/{id}")
     public Result<Student> getStudent(@PathVariable Long id) {
         Optional<Student> student = studentService.getStudentById(id);
@@ -44,7 +45,7 @@ public class StudentController {
         List<Student> list = studentService.getStudentsByClass(className);
         return Result.success(list);
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     @GetMapping("/list")
     public Result<List<Student>> getAllStudents() {
         return Result.success(studentService.getAllStudents());

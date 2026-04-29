@@ -14,43 +14,38 @@ public class UserDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // 这里改了：加了 role 字段和对应的 ?
     public int insert(User user) {
-        String sql = "INSERT INTO teacher (username, password, real_name, email, phone) VALUES (?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPassword(),
-                user.getRealName(),
-                user.getEmail(),
-                user.getPhone());
+        String sql = "INSERT INTO teacher (username, password, real_name, email, phone, role) VALUES (?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate.update(sql, user.getUsername(), user.getPassword(),
+                user.getRealName(), user.getEmail(), user.getPhone(), user.getRole());
     }
 
+    // 这里改了：SELECT 后面加了 role
     public User findById(Integer id) {
-        String sql = "SELECT id, username, password, real_name AS realName, email, phone, create_time AS createTime FROM teacher WHERE id = ?";
+        String sql = "SELECT id, username, password, real_name AS realName, email, phone, role, create_time AS createTime FROM teacher WHERE id = ?";
         List<User> list = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class), id);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    // 这里改了：SELECT 后面加了 role
     public User findByUsername(String username) {
-        String sql = "SELECT id, username, password, real_name AS realName, email, phone, create_time AS createTime FROM teacher WHERE username = ?";
+        String sql = "SELECT id, username, password, real_name AS realName, email, phone, role, create_time AS createTime FROM teacher WHERE username = ?";
         List<User> list = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class), username);
         return list.isEmpty() ? null : list.get(0);
     }
 
+    // 这里改了：SELECT 后面加了 role
     public List<User> findAllTeachers() {
-        String sql = "SELECT id, username, password, real_name AS realName, email, phone, create_time AS createTime FROM teacher";
+        String sql = "SELECT id, username, password, real_name AS realName, email, phone, role, create_time AS createTime FROM teacher";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class));
     }
 
-
+    // 这里改了：UPDATE 语句加了 role
     public int update(User user) {
-        String sql = "UPDATE teacher SET username = ?, password = ?, real_name = ?, email = ?, phone = ? WHERE id = ?";
-        return jdbcTemplate.update(sql,
-                user.getUsername(),
-                user.getPassword(),
-                user.getRealName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getId());
+        String sql = "UPDATE teacher SET username = ?, password = ?, real_name = ?, email = ?, phone = ?, role = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, user.getUsername(), user.getPassword(),
+                user.getRealName(), user.getEmail(), user.getPhone(), user.getRole(), user.getId());
     }
 
     public int deleteById(Integer id) {

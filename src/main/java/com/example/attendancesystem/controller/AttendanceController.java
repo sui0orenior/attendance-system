@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
 
-    // ========== 原有方法 ==========
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PostMapping("/add")
     public Result<Attendance> addAttendance(@RequestBody Attendance attendance) {
         try {
@@ -42,7 +43,7 @@ public class AttendanceController {
     public Result<List<Attendance>> getByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return Result.success(attendanceService.getAttendanceByDate(date));
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     @GetMapping("/list")
     public Result<List<Attendance>> getAll() {
         return Result.success(attendanceService.getAllAttendances());

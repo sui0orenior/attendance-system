@@ -4,6 +4,7 @@ import com.example.attendancesystem.dao.UserDao;
 import com.example.attendancesystem.entity.User;
 import com.example.attendancesystem.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,15 +15,32 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDao userDao;
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Override
     public boolean addUser(User user) {
+        // 1. 检查用户名
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new IllegalArgumentException("用户名不能为空");
         }
+
+        // 2. 检查用户名是否已存在
         User exist = userDao.findByUsername(user.getUsername());
         if (exist != null) {
             throw new IllegalArgumentException("用户名已存在");
         }
+
+        // 3. 加密密码（在插入数据库之前）
+        String rawPassword = user.getPassword();
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        user.setPassword(encodedPassword);
+
+        // 4. 设置默认角色
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("TEACHER");
+        }
+
+        // 5. 插入数据库
         int rows = userDao.insert(user);
         return rows > 0;
     }
