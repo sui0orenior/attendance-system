@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤管理系统</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .container { width: 600px; text-align: center; }
+        .menu { margin: 20px 0; }
+        .menu a { display: block; margin: 10px 0; color: #007bff; text-decoration: none; font-size: 18px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>考勤管理系统</h2>
+    <p>欢迎, <span th:text="${username}">用户名</span></p>
+
+    <div class="menu">
+        <a th:href="@{/student/list}">学生管理</a>
+        <a th:href="@{/attendance/list}">考勤记录</a>
+    </div>
+
+    <div class="menu">
+        <a th:href="@{/logout}">退出登录</a>
+    </div>
+</div>
+</body>
+</html>
