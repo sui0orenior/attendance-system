@@ -1,6 +1,5 @@
 package com.example.attendancesystem.controller;
 
-
 import com.example.attendancesystem.common.Result;
 import com.example.attendancesystem.entity.Attendance;
 import com.example.attendancesystem.service.AttendanceService;
@@ -26,23 +25,22 @@ public class AttendanceController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @PostMapping("/add")
     public Result<Attendance> addAttendance(@RequestBody Attendance attendance) {
-        try {
-            Attendance saved = attendanceService.addAttendance(attendance);
-            return Result.success(saved);
-        } catch (Exception e) {
-            return Result.fail(e.getMessage());
-        }
+        Attendance saved = attendanceService.addAttendance(attendance);
+        return Result.success(saved);
     }
 
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER') or (#studentId == authentication.principal.id)")
     public Result<List<Attendance>> getByStudentId(@PathVariable Long studentId) {
         return Result.success(attendanceService.getAttendanceByStudentId(studentId));
     }
 
     @GetMapping("/date")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public Result<List<Attendance>> getByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return Result.success(attendanceService.getAttendanceByDate(date));
     }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     @GetMapping("/list")
     public Result<List<Attendance>> getAll() {
@@ -50,27 +48,21 @@ public class AttendanceController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public Result<Attendance> updateAttendance(@RequestBody Attendance attendance) {
-        try {
-            Attendance updated = attendanceService.updateAttendance(attendance);
-            return Result.success(updated);
-        } catch (Exception e) {
-            return Result.fail(e.getMessage());
-        }
+        Attendance updated = attendanceService.updateAttendance(attendance);
+        return Result.success(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public Result<String> deleteAttendance(@PathVariable Long id) {
-        try {
-            attendanceService.deleteAttendance(id);
-            return Result.success("删除成功");
-        } catch (Exception e) {
-            return Result.fail(e.getMessage());
-        }
+        attendanceService.deleteAttendance(id);
+        return Result.success("删除成功");
     }
 
-    // ========== 任务一：分页接口 ==========
     @GetMapping("/page")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public Result<Page<Attendance>> getAttendancePage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -79,7 +71,6 @@ public class AttendanceController {
 
         Sort sort = Sort.unsorted();
         if (sortBy != null) {
-            // 修正：Sort.Direction.DESC 和 Sort.Direction.ASC
             Sort.Direction dir = "desc".equalsIgnoreCase(direction)
                     ? Sort.Direction.DESC
                     : Sort.Direction.ASC;
@@ -90,8 +81,8 @@ public class AttendanceController {
         return Result.success(pageResult);
     }
 
-    // ========== 任务三：多条件查询接口 ==========
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public Result<Page<Attendance>> searchAttendances(
             @RequestParam(required = false) String studentNumber,
             @RequestParam(required = false) String status,

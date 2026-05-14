@@ -1,8 +1,7 @@
 package com.example.attendancesystem.service.impl;
 
-
 import com.example.attendancesystem.entity.Attendance;
-import com.example.attendancesystem.responsitory.AttendanceRepository;
+import com.example.attendancesystem.repository.AttendanceRepository;
 import com.example.attendancesystem.service.AttendanceService;
 import com.example.attendancesystem.specification.AttendanceSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,17 +39,15 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceRepository.findAll();
     }
 
-    // ========== 任务一：分页查询 ==========
     @Override
     public Page<Attendance> getAttendancePage(Pageable pageable) {
         return attendanceRepository.findAll(pageable);
     }
 
-    // ========== 任务三：多条件查询 ==========
     @Override
     public Page<Attendance> searchAttendances(String studentNumber, String status,
                                               LocalDate startDate, LocalDate endDate,
-                                              Pageable pageable) {  // 确保参数完整
+                                              Pageable pageable) {
         Specification<Attendance> spec = Specification
                 .where(AttendanceSpecifications.hasStudentNumber(studentNumber))
                 .and(AttendanceSpecifications.hasStatus(status))

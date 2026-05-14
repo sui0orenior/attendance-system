@@ -1,7 +1,7 @@
 package com.example.attendancesystem.entity;
 
-
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,37 +15,57 @@ public class Student {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(name = "student_number", nullable = false, unique = true, length = 20)
-    private String studentNumber;
+    @Column(name = "student_no", nullable = false, unique = true, length = 20)
+    private String studentNo;
 
     @Column(name = "class_name", length = 50)
     private String className;
 
+    @Column(length = 10)
+    private String gender;
+
+    private LocalDate birthday;
+
     @Column(length = 20)
     private String phone;
+
+    @Column(length = 100)
+    private String email;
+
+    @Column(length = 200)
+    private String address;
+
+    private String remark;
 
     @Column(name = "create_time")
     private LocalDateTime createTime;
 
-    // 无参构造（JPA 必需）
+    // 无参构造
     public Student() {}
 
-    // Getter 和 Setter
+    // Getters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getStudentNumber() { return studentNumber; }
-    public void setStudentNumber(String studentNumber) { this.studentNumber = studentNumber; }
-
+    public String getStudentNo() { return studentNo; }
     public String getClassName() { return className; }
-    public void setClassName(String className) { this.className = className; }
-
+    public String getGender() { return gender; }
+    public LocalDate getBirthday() { return birthday; }
     public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
+    public String getEmail() { return email; }
+    public String getAddress() { return address; }
+    public String getRemark() { return remark; }
     public LocalDateTime getCreateTime() { return createTime; }
+
+    // Setters
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setStudentNo(String studentNo) { this.studentNo = studentNo; }
+    public void setClassName(String className) { this.className = className; }
+    public void setGender(String gender) { this.gender = gender; }
+    public void setBirthday(LocalDate birthday) { this.birthday = birthday; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public void setEmail(String email) { this.email = email; }
+    public void setAddress(String address) { this.address = address; }
+    public void setRemark(String remark) { this.remark = remark; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
 }
