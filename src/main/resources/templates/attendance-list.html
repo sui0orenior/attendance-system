@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤记录 - 考勤管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-NORMAL { background-color: #28a745; color: white; }
+        .status-正常 { background-color: #28a745; color: white; }
+        .status-LATE, .status-迟到 { background-color: #ffc107; color: #333; }
+        .status-缺勤 { background-color: #dc3545; color: white; }
+        .status-早退 { background-color: #fd7e14; color: white; }
+        .filter-card { background-color: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .sort-link { text-decoration: none; color: #333; }
+        .sort-link:hover { color: #007bff; }
+    </style>
+</head>
+<body>
+<!-- 引用导航栏组件 -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+    <h2 class="mb-4">📊 考勤记录</h2>
+
+    <!-- 提示信息 -->
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- 筛选表单 - 任务2核心 -->
+    <div class="filter-card">
+        <h5 class="mb-3">🔍 筛选条件</h5>
+        <form th:action="@{/attendance/list}" method="get" id="filterForm">
+            <div class="row g-3">
+                <!-- 按学号/姓名搜索 -->
+                <div class="col-md-3">
+                    <label class="form-label">学号/姓名</label>
+                    <input type="text" name="keyword" class="form-control"
+                           placeholder="请输入学号或姓名" th:value="${keyword}">
+                </div>
+
+                <!-- 按课程筛选 -->
+                <div class="col-md-3">
+                    <label class="form-label">课程</label>
+                    <select name="courseId" class="form-select">
+                        <option value="">全部课程</option>
+                        <option th:each="course : ${courses}"
+                                th:value="${course.id}"
+                                th:text="${course.name}"
+                                th:selected="${courseId != null and courseId == course.id}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 按状态筛选 -->
+                <div class="col-md-2">
+                    <label class="form-label">状态</label>
+                    <select name="status" class="form-select">
+                        <option value="">全部状态</option>
+                        <option value="正常" th:selected="${status == '正常'}">正常</option>
+                        <option value="迟到" th:selected="${status == '迟到'}">迟到</option>
+                        <option value="缺勤" th:selected="${status == '缺勤'}">缺勤</option>
+                        <option value="早退" th:selected="${status == '早退'}">早退</option>
+                    </select>
+                </div>
+
+                <!-- 快捷日期筛选 -->
+                <div class="col-md-2">
+                    <label class="form-label">快捷筛选</label>
+                    <select name="quickDate" class="form-select" id="quickDate">
+                        <option value="">自定义日期</option>
+                        <option value="today">今天</option>
+                        <option value="week">本周</option>
+                        <option value="month">本月</option>
+                    </select>
+                </div>
+
+                <!-- 日期范围 -->
+                <div class="col-md-3">
+                    <label class="form-label">开始日期</label>
+                    <input type="date" name="startDate" class="form-control"
+                           th:value="${startDate}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">结束日期</label>
+                    <input type="date" name="endDate" class="form-control"
+                           th:value="${endDate}">
+                </div>
+
+                <!-- 按钮 -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">🔍 查询</button>
+                    <a th:href="@{/attendance/list}" class="btn btn-secondary">🔄 重置</a>
+                </div>
+            </div>
+
+            <!-- 隐藏字段：分页和排序 -->
+            <input type="hidden" name="page" th:value="${currentPage}">
+            <input type="hidden" name="sortBy" th:value="${sortBy}">
+            <input type="hidden" name="sortOrder" th:value="${sortOrder}">
+        </form>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>学号</th>
+                <th>学生姓名</th>
+                <th>课程名称</th>
+                <th>
+                    <a th:href="@{/attendance/list(page=${currentPage}, sortBy='attendanceDate', sortOrder=${sortBy == 'attendanceDate' and sortOrder == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, status=${status}, courseId=${courseId}, startDate=${startDate}, endDate=${endDate})}"
+                       class="sort-link text-white">
+                        打卡日期
+                        <span th:if="${sortBy == 'attendanceDate'}" th:text="${sortOrder == 'asc' ? '↑' : '↓'}"></span>
+                    </a>
+                </th>
+                <th>打卡时间</th>
+                <th>状态</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${records.empty}">
+                <td colspan="9" class="text-center py-4">
+                    📭 暂无考勤记录
+                </td>
+            </tr>
+            <tr th:each="record : ${records}">
+                <td th:text="${record.id}"></td>
+                <td th:text="${record.student != null ? record.student.studentNo : record.studentId}"></td>
+                <td th:text="${record.student != null ? record.student.name : '-'}"></td>
+                <td th:text="${record.courseName}">课程名称</td>
+                <td th:text="${#temporals.format(record.attendanceDate, 'yyyy-MM-dd')}"></td>
+                <td th:text="${#temporals.format(record.createTime, 'HH:mm:ss')}"></td>
+                <td>
+                            <span class="status-badge"
+                                  th:class="${'status-' + record.status}"
+                                  th:text="${record.status}">
+                                状态
+                            </span>
+                </td>
+                <td th:text="${record.remark != null ? record.remark : '-'}"></td>
+                <td>
+                    <a th:href="@{/attendance/delete/{id}(id=${record.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('确定删除这条考勤记录吗？')">删除</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页导航 -->
+    <nav th:if="${totalPages > 0}">
+        <ul class="pagination justify-content-center">
+            <!-- 上一页 -->
+            <li th:class="${currentPage == 0} ? 'page-item disabled' : 'page-item'">
+                <a class="page-link"
+                   th:href="@{/attendance/list(page=${currentPage - 1}, size=${size}, sortBy=${sortBy}, sortOrder=${sortOrder}, keyword=${keyword}, status=${status}, courseId=${courseId}, startDate=${startDate}, endDate=${endDate})}">
+                    上一页
+                </a>
+            </li>
+
+            <!-- 页码 -->
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:class="${currentPage == i} ? 'page-item active' : 'page-item'">
+                <a class="page-link"
+                   th:href="@{/attendance/list(page=${i}, size=${size}, sortBy=${sortBy}, sortOrder=${sortOrder}, keyword=${keyword}, status=${status}, courseId=${courseId}, startDate=${startDate}, endDate=${endDate})}"
+                   th:text="${i + 1}">
+                </a>
+            </li>
+
+            <!-- 下一页 -->
+            <li th:class="${currentPage >= totalPages - 1} ? 'page-item disabled' : 'page-item'">
+                <a class="page-link"
+                   th:href="@{/attendance/list(page=${currentPage + 1}, size=${size}, sortBy=${sortBy}, sortOrder=${sortOrder}, keyword=${keyword}, status=${status}, courseId=${courseId}, startDate=${startDate}, endDate=${endDate})}">
+                    下一页
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 统计信息和返回按钮 -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div>
+            <span class="text-muted">共 <strong th:text="${totalElements}">0</strong> 条记录</span>
+        </div>
+        <div>
+            <a th:href="@{/attendance/checkin}" class="btn btn-primary me-2">+ 新增打卡</a>
+            <a th:href="@{/}" class="btn btn-secondary">返回首页</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 快捷日期选择
+    document.getElementById('quickDate')?.addEventListener('change', function() {
+        const value = this.value;
+        const today = new Date();
+
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        if (value === 'today') {
+            const dateStr = formatDate(today);
+            document.querySelector('input[name="startDate"]').value = dateStr;
+            document.querySelector('input[name="endDate"]').value = dateStr;
+        } else if (value === 'week') {
+            // 本周一
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            monday.setDate(today.getDate() - diff);
+            // 本周日
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            document.querySelector('input[name="startDate"]').value = formatDate(monday);
+            document.querySelector('input[name="endDate"]').value = formatDate(sunday);
+        } else if (value === 'month') {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            document.querySelector('input[name="startDate"]').value = formatDate(firstDay);
+            document.querySelector('input[name="endDate"]').value = formatDate(lastDay);
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

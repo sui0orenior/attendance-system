@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤打卡 - 考勤管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container-main { max-width: 600px; margin: 0 auto; }
+        .card { border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .time-display { font-size: 24px; font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+<!-- 引用导航栏组件 -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4 container-main">
+    <h2 class="text-center mb-4">📝 考勤打卡</h2>
+
+    <!-- 成功提示 -->
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>✅ 打卡成功！</strong> <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- 失败提示 -->
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>❌ 打卡失败！</strong> <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="checkinForm" th:action="@{/attendance/checkin}" method="post">
+                <!-- 课程选择 -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">📖 选择课程</label>
+                    <select name="courseId" id="courseId" class="form-select" required>
+                        <option value="">-- 请选择课程 --</option>
+                        <option th:each="course : ${courses}"
+                                th:value="${course.id}"
+                                th:text="${course.name} + ' - ' + ${course.className}">
+                        </option>
+                    </select>
+                    <div class="form-text">请选择您要打卡的课程</div>
+                </div>
+
+                <!-- 自动填充的打卡时间 -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">⏰ 打卡时间</label>
+                    <div class="time-display p-3 bg-light rounded text-center" id="currentTime"></div>
+                    <input type="hidden" name="checkinTime" id="checkinTime">
+                </div>
+
+                <!-- 备注 -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">📝 备注</label>
+                    <textarea name="remark" class="form-control" rows="3"
+                              placeholder="请输入备注信息（可选）"></textarea>
+                </div>
+
+                <!-- 提交按钮 -->
+                <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                    ✅ 提交打卡
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 打卡说明 -->
+    <div class="alert alert-info mt-4">
+        <strong>📌 打卡说明：</strong><br>
+        • 上课前15分钟内打卡为 <span class="badge bg-success">正常</span><br>
+        • 上课后30分钟内打卡为 <span class="badge bg-warning">迟到</span><br>
+        • 超过30分钟未打卡为 <span class="badge bg-danger">缺勤</span><br>
+        • 系统会自动判断您的打卡状态
+    </div>
+</div>
+
+<script>
+    // 实时显示当前时间并自动填充
+    function updateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        const dateStr = `${year}-${month}-${day}`;
+        const timeStr = `${hours}:${minutes}:${seconds}`;
+        const dateTimeStr = `${dateStr} ${timeStr}`;
+
+        document.getElementById('currentTime').innerHTML = dateTimeStr;
+        document.getElementById('checkinTime').value = dateTimeStr;
+    }
+
+    // 每秒更新一次时间
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // 表单提交前验证
+    document.getElementById('checkinForm').addEventListener('submit', function(e) {
+        const courseSelect = document.getElementById('courseId');
+        if (!courseSelect.value) {
+            e.preventDefault();
+            alert('请选择课程！');
+            return false;
+        }
+
+        if (!confirm('确认提交打卡吗？')) {
+            e.preventDefault();
+            return false;
+        }
+        return true;
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

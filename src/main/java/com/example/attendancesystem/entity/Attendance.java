@@ -34,6 +34,11 @@ public class Attendance {
     @JoinColumn(name = "student_id", insertable = false, updatable = false)
     private Student student;
 
+    // ⭐ 这里添加 courseId 字段 ↓↓↓
+
+    @Column(name = "course_id")
+    private Long courseId;   // 新增：课程ID
+
     @PrePersist
     protected void onCreate() {
         createTime = LocalDateTime.now();
@@ -41,7 +46,7 @@ public class Attendance {
 
     public Attendance() {}
 
-    // Getter & Setter
+    // 原有的 Getter/Setter...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getStudentId() { return studentId; }
@@ -58,4 +63,8 @@ public class Attendance {
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
+
+    // ⭐ 新增 courseId 的 Getter 和 Setter ↓↓↓
+    public Long getCourseId() { return courseId; }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
 }

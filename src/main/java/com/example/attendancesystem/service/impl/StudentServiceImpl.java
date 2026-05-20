@@ -41,6 +41,12 @@ public class StudentServiceImpl implements StudentService {
         return student.orElse(null);
     }
 
+    // ⭐ 新增：根据学号查询学生
+    @Override
+    public Student findByStudentNo(String studentNo) {
+        return studentRepository.findByStudentNo(studentNo);
+    }
+
     @Override
     public Student save(Student student) {
         if (student.getCreateTime() == null) {

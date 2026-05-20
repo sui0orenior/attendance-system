@@ -1,6 +1,5 @@
 package com.example.attendancesystem.specification;
 
-
 import com.example.attendancesystem.entity.Attendance;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -8,7 +7,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-
 
 public class AttendanceSpecifications {
 
@@ -18,7 +16,8 @@ public class AttendanceSpecifications {
                 return cb.conjunction();
             }
             Join<Object, Object> studentJoin = root.join("student", JoinType.LEFT);
-            return cb.equal(studentJoin.get("studentNumber"), studentNumber);
+            // ⭐ 把 "studentNumber" 改成 "studentNo"
+            return cb.equal(studentJoin.get("studentNo"), studentNumber);
         };
     }
 

@@ -10,6 +10,9 @@ public interface StudentService {
     // 根据ID查询学生
     Student findById(Long id);
 
+    // ⭐ 新增：根据学号查询学生
+    Student findByStudentNo(String studentNo);
+
     // 保存学生（新增或编辑）
     Student save(Student student);
 

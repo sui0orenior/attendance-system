@@ -11,4 +11,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     Page<Student> findByNameContainingIgnoreCaseOrStudentNoContainingIgnoreCase(
             String name, String studentNo, Pageable pageable);
+
+    // ⭐ 新增：根据学号查询学生
+    Student findByStudentNo(String studentNo);
 }
